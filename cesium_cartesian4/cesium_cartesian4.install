@@ -1,0 +1,52 @@
+<?php
+/**
+ * @file
+ * Install, update, and uninstall functions for the Cesium Camera module.
+ */
+
+/**
+ * Implements hook_field_schema().
+ *
+ * @see schemaapi
+ * @see hook_field_schema()
+ * @ingroup cesium_cartesian
+ */
+function cesium_cartesian4_field_schema($field) {
+  $columns = array(
+    'x' => array(
+      'description' => 'X component',
+      'type' => 'float',
+      'size' => 'big',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'y' => array(
+      'description' => 'Y component',
+      'type' => 'float',
+      'size' => 'big',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'z' => array(
+      'description' => 'Z component',
+      'type' => 'float',
+      'size' => 'big',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+      'w' => array(
+          'description' => 'W component',
+          'type' => 'float',
+          'size' => 'big',
+          'not null' => TRUE,
+          'default' => 0,
+      ),
+  );
+
+  $indexes = array();
+
+  return array(
+    'columns' => $columns,
+    'indexes' => $indexes,
+  );
+}

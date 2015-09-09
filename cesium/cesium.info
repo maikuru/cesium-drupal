@@ -1,0 +1,9 @@
+package = Cesium
+core = 7.x
+name = Cesium
+machine name = cesium
+description = Allows to use Cesium libraries
+dependencies[] = libraries
+
+files[] = cesium.module
+fiels[] = tests/cesium.test

@@ -1,0 +1,21 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the cesium_block module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ *
+ * @ingroup cesium
+ */
+function cesium_block_uninstall() {
+  variable_del('cesium_viewer_animation');
+  variable_del('library');
+  variable_del('js_variable');
+  variable_del('container_id');
+  variable_del('application_type');
+
+//  variable_del('show_base_layer_picker');
+
+}

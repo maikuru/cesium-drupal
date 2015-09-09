@@ -1,0 +1,5 @@
+name = Cesium Camera
+description = Field used to store the state of a Cesium Camera
+package = Cesium
+core = 7.x
+files[] = cesium_camera.test

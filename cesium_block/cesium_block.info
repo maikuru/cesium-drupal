@@ -1,0 +1,11 @@
+name = Cesium Block
+machine name = cesium_block
+description = Block that creates a Cesium instance
+package = Cesium
+core = 7.x
+dependencies[] = block
+dependencies[] = cesium
+files[] = cesium_block.module
+files[] = tests/cesium_block.test
+
+

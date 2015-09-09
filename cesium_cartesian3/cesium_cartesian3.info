@@ -1,0 +1,4 @@
+name = Cartesian3
+description = vector [x,y,z]
+package = Cesium
+core = 7.x

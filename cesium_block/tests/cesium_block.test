@@ -1,0 +1,27 @@
+<?php
+/**
+ * @file
+ * Test case for testing the Cesium module.
+ */
+
+/**
+ * Functional tests for the Block Example module.
+ *
+ * @ingroup cesium
+ */
+class CesiumBlockTestCase extends DrupalWebTestCase {
+
+  protected $webUser;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Cesium Block functionality',
+      'description' => 'Test the configuration options and block created by the Cesium module.',
+      'group' => 'Cesium',
+    );
+  }
+
+}

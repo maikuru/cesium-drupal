@@ -1,0 +1,26 @@
+<?php
+/**
+ * @file
+ * Install, update, and uninstall functions for the Cesium Camera module.
+ */
+
+/**
+ * Implements hook_field_schema().
+ *
+ * @see http://drupal.org/node/146939
+ * @see schemaapi
+ * @see hook_field_schema()
+ * @ingroup cesium_camera
+ */
+function cesium_camera_field_schema($field) {
+  $columns = array(
+    'rgb' => array('type' => 'varchar', 'length' => 7, 'not null' => FALSE),
+  );
+  $indexes = array(
+    'rgb' => array('rgb'),
+  );
+  return array(
+    'columns' => $columns,
+    'indexes' => $indexes,
+  );
+}

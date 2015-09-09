@@ -1,0 +1,130 @@
+<?php
+/**
+ * @file
+ * Module file for Cesium.
+ */
+
+define('CESIUM_BLOCK_INPUT_APPLICATION_TYPE', 'cesium_block_application_type');
+define('CESIUM_BLOCK_INPUT_BING_MAPS_API_KEY', 'cesium_block_bing_maps_api_key');
+define('CESIUM_BLOCK_INPUT_CONTAINER_ID', 'cesium_block_container_id');
+define('CESIUM_BLOCK_INPUT_JS_VARIABLE', 'cesium_block_js_variable');
+define('CESIUM_BLOCK_INPUT_LIBRARY_VARIANT', 'cesium_block_library_variant');
+
+/**
+ * Implements hook_block_info().
+ */
+function cesium_block_block_info() {
+    $blocks['cesium_block'] = array(
+        'info' => t('Cesium: Cesium Block'),
+        'cache' => DRUPAL_CACHE_PER_ROLE,
+        'status' => TRUE,
+        'region' => 'content',
+        'visibility' => BLOCK_VISIBILITY_LISTED
+    );
+
+    return $blocks;
+}
+
+/**
+ * Implements hook_block_configure().
+ * @param string $delta
+ * @return array
+ */
+function cesium_block_block_configure($delta = '') {
+    $form = [];
+
+    $form[CESIUM_BLOCK_INPUT_APPLICATION_TYPE] = [
+        '#type' => 'radios',
+        '#title' => t('Application Type'),
+        '#options' => ['Viewer' => t('Viewer'), 'CesiumWidget' => t('Widget')],
+        '#default_value' => variable_get(CESIUM_BLOCK_INPUT_APPLICATION_TYPE, t('CesiumViewer')),
+    ];
+
+    $form[CESIUM_BLOCK_INPUT_BING_MAPS_API_KEY] = [
+        '#type' => 'textfield',
+        '#title' => t('Bing Maps API Key'),
+        '#size' => 60,
+        '#description' => t('API Key provided by Microsoft for access to Bing Maps'),
+        '#default_value' => variable_get(CESIUM_BLOCK_INPUT_BING_MAPS_API_KEY, '')
+    ];
+
+    $form[CESIUM_BLOCK_INPUT_CONTAINER_ID] = [
+        '#type' => 'textfield',
+        '#title' => t('HTML Container ID'),
+        '#size' => 60,
+        '#description' => t('The html id that will be used for the container div for Cesium'),
+        '#default_value' => variable_get(CESIUM_BLOCK_INPUT_CONTAINER_ID, t('cesiumContainer'))
+    ];
+
+    $form[CESIUM_BLOCK_INPUT_JS_VARIABLE] = [
+        '#type' => 'textfield',
+        '#title' => t('Javascript Variable'),
+        '#size' => 60,
+        '#description' => t('variable to save the cesium object as. example: var window.cesiumViewer = new Cesium...'),
+        '#default_value' => variable_get(CESIUM_BLOCK_INPUT_JS_VARIABLE, t('viewer'))
+    ];
+
+    $form[CESIUM_BLOCK_INPUT_LIBRARY_VARIANT] = [
+        '#type' => 'radios',
+        '#title' => t('Library'),
+        '#options' => ['minified' => t('Production'), 'unminified' => t('Development')],
+        '#default_value' => variable_get(CESIUM_BLOCK_INPUT_LIBRARY_VARIANT, CESIUM_LIBRARY_VARIANT_DEFAULT),
+    ];
+
+//    $form['show_base_layer_picker'] = [
+//        '#type' => 'checkbox',
+//        '#title' => t('Base Layer Picker'),
+//        '#size' => 60,
+//        '#description' => t('show or hide Base Layer Picker'),
+//        '#default_value' => variable_get('show_base_layer_picker', true)
+//    ];
+
+    return $form;
+}
+
+/**
+ * Implements hook_block_save().
+ * @param string $delta
+ * @param array $edit
+ */
+function cesium_block_block_save($delta = '', $edit = []) {
+    variable_set(CESIUM_BLOCK_INPUT_APPLICATION_TYPE, $edit[CESIUM_BLOCK_INPUT_APPLICATION_TYPE]);
+    variable_set(CESIUM_BLOCK_INPUT_BING_MAPS_API_KEY, $edit[CESIUM_BLOCK_INPUT_BING_MAPS_API_KEY]);
+    variable_set(CESIUM_BLOCK_INPUT_CONTAINER_ID, $edit[CESIUM_BLOCK_INPUT_CONTAINER_ID]);
+    variable_set(CESIUM_BLOCK_INPUT_JS_VARIABLE, $edit[CESIUM_BLOCK_INPUT_JS_VARIABLE]);
+    variable_set(CESIUM_BLOCK_INPUT_LIBRARY_VARIANT, $edit[CESIUM_BLOCK_INPUT_LIBRARY_VARIANT]);
+//    variable_set('show_base_layer_picker',  $edit['show_base_layer_picker']);
+}
+
+/**
+ * Implements hook_block_view().
+ * @param string $delta
+ * @return array
+ */
+function cesium_block_block_view($delta) {
+    $variant = variable_get(CESIUM_BLOCK_INPUT_LIBRARY_VARIANT);
+    $library = libraries_load(CESIUM_LIBRARY_NAME, $variant);
+
+    if ($library && !empty($library['loaded'])) {
+        $jsVariable = variable_get(CESIUM_BLOCK_INPUT_JS_VARIABLE);
+        $containerId = variable_get(CESIUM_BLOCK_INPUT_CONTAINER_ID);
+        $applicationType = variable_get(CESIUM_BLOCK_INPUT_APPLICATION_TYPE);
+
+        $content = <<<BLOCK_CONTENT
+<div id="{$containerId}" class="cesium_block_container"></div>
+
+<script type="text/javascript">
+    var {$jsVariable};
+    (function() {
+        {$jsVariable} = new Cesium.{$applicationType}('{$containerId}');
+    }).call();
+</script>
+
+BLOCK_CONTENT;
+
+    } else {
+        $content = '<div class="alert"><p>' . t('Unable to Load Cesium Javascript Library') . '</p></div>';
+    }
+
+    return ['content' => $content];
+}

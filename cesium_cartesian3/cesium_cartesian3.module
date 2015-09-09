@@ -1,0 +1,306 @@
+<?php
+/**
+ * @file
+ * Drupal representation for storing Cesium Cartesian3 values.
+ */
+
+/**
+ * @defgroup cesium_cartesian3 Cartesian 3: [x,y,z]
+ * @ingroup cesium
+ *
+ * @see field_types
+ * @see field
+ */
+
+/***************************************************************
+ * Field Type API hooks
+ ***************************************************************/
+
+/**
+ * Implements hook_field_info().
+ *
+ */
+function cesium_cartesian3_field_info() {
+  return array(
+    // We name our field as the associative name of the array.
+      'cesium_cartesian3_vector' => array(
+          'label' => t('Cartesian3'),
+          'description' => t('3x1 vector [x,y,z]'),
+
+          'default_widget' => 'cesium_cartesian3_vector',
+          'default_formatter' => 'cesium_cartesian3_text',
+
+          'property_type' => 'cesium_cartesian3',
+          'property_callbacks' => array('cesium_cartesian3_property_info_callbacks')
+      ),
+  );
+}
+
+/**
+ * Callback to alter the property info of Cartesian3 fields.
+ *
+ * @see cesium_cartesian3_field_info().
+ */
+function cesium_cartesian3_property_info_callbacks(&$info, $entity_type, $field, $instance, $field_type) {
+  $name = $field['field_name'];
+  $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$name];
+
+  $property['type'] = ($field['cardinality'] != 1) ? 'list<cartesian3>' : 'cartesian3';
+  $property['getter callback'] = 'entity_metadata_field_verbatim_get';
+  $property['setter callback'] = 'entity_metadata_field_verbatim_set';
+  $property['property info'] = cesium_cartesian3_data_property_info();
+
+  unset($property['query callback']);
+}
+
+/**
+ * Defines info for the properties of the Cartesian3 field data structure.
+ */
+function cesium_cartesian3_data_property_info() {
+  // Build an array of basic property information for the geolocation field.
+  $properties = array(
+    'x' => array(
+      'label' => 'X Component',
+      'type' => 'decimal',
+      'required' => TRUE,
+      'description' => '',
+      'getter callback' => 'entity_property_verbatim_get',
+    ),
+    'y' => array(
+      'label' => 'Y Component',
+      'type' => 'decimal',
+      'description' => '',
+      'required' => TRUE,
+      'getter callback' => 'entity_property_verbatim_get',
+    ),
+    'z' => array(
+      'label' => 'Z Component',
+      'description' => '',
+      'type' => 'decimal',
+      'getter callback' => 'entity_property_verbatim_get',
+    ),
+    'vector' => array(
+      'label' => 'vector output',
+      'description' => '',
+      'type' => 'string',
+      'getter callback' => 'cesium_cartesian3_return_vector'
+    )
+  );
+
+  return $properties;
+}
+
+/**
+ * Gets the a [x,y,z] vector string.
+ */
+function cesium_cartesian3_return_vector($data, array $options, $name) {
+  if ((is_array($data) || (is_object($data) && $data instanceof ArrayAccess))) {
+    return "[{$data['x']}, {$data['y']}, {$data['z']}]";
+  }
+  return NULL;
+}
+
+/**
+ * Implements hook_field_validate().
+ **
+ * @see cesium_cartesian3_field_widget_error()
+ */
+function cesium_cartesian3_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+  foreach ($items as $delta => $item) {
+    if (!cesium_cartesian3_field_is_empty($item, $field)) {
+
+      if (!is_numeric($item['x'])) {
+        $errors[$field['field_name']][$langcode][$delta][] = array(
+            'error' => 'cesium_cartesian3_invalid_x',
+            'message' => t('Invalid X Component. Value must be numeric.'),
+        );
+      }
+
+      if (!is_numeric($item['y'])) {
+        $errors[$field['field_name']][$langcode][$delta][] = array(
+            'error' => 'cesium_cartesian3_invalid_y',
+            'message' => t('Invalid Y Component. Value must be numeric.'),
+        );
+      }
+
+      if (!is_numeric($item['z'])) {
+        $errors[$field['field_name']][$langcode][$delta][] = array(
+            'error' => 'cesium_cartesian3_invalid_z',
+            'message' => t('Invalid Z Component. Value must be numeric.'),
+        );
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_field_is_empty().
+ *
+ */
+function cesium_cartesian3_field_is_empty($item, $field) {
+  return empty($item['x']) || empty($item['y']) || empty($item['z']);
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ **
+ * @see cesium_cartesian3_field_formatter_view()
+ */
+function cesium_cartesian3_field_formatter_info() {
+  return array(
+    'cesium_cartesian3_text' => array(
+      'label' => t('Simple text-based formatter'),
+      'field types' => array('cesium_cartesian3_vector'),
+    ),
+    'cesium_cartesian3_x' => array(
+        'label' => t('X Component text-based formatter'),
+        'field types' => array('cesium_cartesian3_vector'),
+    ),
+    'cesium_cartesian3_y' => array(
+        'label' => t('X Component text-based formatter'),
+        'field types' => array('cesium_cartesian3_vector'),
+    ),
+    'cesium_cartesian3_z' => array(
+        'label' => t('X Component text-based formatter'),
+        'field types' => array('cesium_cartesian3_vector'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ **
+ * @see cesium_cartesian3_field_formatter_info()
+ */
+function cesium_cartesian3_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+
+  switch ($display['type']) {
+
+    case 'cesium_cartesian3_text':
+      foreach ($items as $delta => $item) {
+        $element[$delta]['#markup'] = '<p>' . t('Cartesian3 [@x, @y, @z]', array(
+                '@x' => $item['x'],
+                '@y' => $item['y'],
+                '@z' => $item['z'],)) . '</p>';
+      }
+      break;
+
+    case 'cesium_cartesian3_x':
+      foreach ($items as $delta => $item) {
+        $element[$delta]['#markup'] = $item['x'];
+      }
+      break;
+
+    case 'cesium_cartesian3_y':
+      foreach ($items as $delta => $item) {
+        $element[$delta]['#markup'] = $item['y'];
+      }
+      break;
+
+    case 'cesium_cartesian3_z':
+      foreach ($items as $delta => $item) {
+        $element[$delta]['#markup'] = $item['z'];
+      }
+      break;
+
+  }
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_widget_info().
+ *
+ * @see cesium_cartesian3_field_widget_form()
+ */
+function cesium_cartesian3_field_widget_info() {
+  return array(
+      'cesium_cartesian3_text' => array(
+          'label' => t('Vector [x,y,z]'),
+          'field types' => array('cesium_cartesian3_vector'),
+      )
+  );
+}
+
+/**
+ * Implements hook_field_widget_form().
+ *
+ */
+function cesium_cartesian3_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  $x_value = isset($items[$delta]['x']) ? $items[$delta]['x'] : '';
+  $y_value = isset($items[$delta]['y']) ? $items[$delta]['y'] : '';
+  $z_value = isset($items[$delta]['z']) ? $items[$delta]['z'] : '';
+
+  $element += array(
+      '#delta' => $delta,
+  );
+
+  // Wrap in a fieldset for single fields
+  if ($field['cardinality'] == 1) {
+    $element['#type'] = 'fieldset';
+  }
+
+  $element['x'] = array();
+  $element['y'] = array();
+  $element['z'] = array();
+
+  switch ($instance['widget']['type']) {
+
+    case 'cesium_cartesian3_text':
+      $element['x'] += array(
+          '#title' => t('X Component'),
+          '#type' => 'textfield',
+          '#default_value' => $x_value,
+          '#size' => 30,
+          '#maxlength' => 30,
+          '#required' => $instance['required'],
+      );
+      $element['y'] += array(
+          '#title' => t('Y Component'),
+          '#type' => 'textfield',
+          '#default_value' => $y_value,
+          '#size' => 30,
+          '#maxlength' => 30,
+          '#required' => $instance['required'],
+      );
+      $element['z'] += array(
+          '#title' => t('Z Component'),
+          '#type' => 'textfield',
+          '#default_value' => $z_value,
+          '#size' => 30,
+          '#maxlength' => 30,
+          '#required' => $instance['required'],
+      );
+
+      $element['#attached']['css'][] = drupal_get_path('module', 'cesium_cartesian3') . '/cesium_cartesian3.css';
+      break;
+
+  }
+  return $element;
+}
+
+
+/**
+ * Implements hook_field_widget_error().
+ *
+ * @see cesium_cartesian3_field_validate()
+ * @see form_error()
+ */
+function cesium_cartesian3_field_widget_error($element, $error, $form, &$form_state) {
+  switch ($error['error']) {
+    case 'cesium_cartesian3_invalid_x':
+      form_error($element['x'], $error['message']);
+      break;
+    case 'cesium_cartesian3_invalid_y':
+      form_error($element['y'], $error['message']);
+      break;
+    case 'cesium_cartesian3_invalid_z':
+      form_error($element['z'], $error['message']);
+      break;
+  }
+}
+
+/**
+ * @} End of "defgroup cesium_cartesian3".
+ */

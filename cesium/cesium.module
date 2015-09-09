@@ -1,0 +1,48 @@
+<?php
+
+/**
+ * @file
+ * Cesium library functionality.
+ */
+define('CESIUM_LIBRARY_NAME', 'cesium');
+define('CESIUM_LIBRARY_VARIANT_DEFAULT', 'minified');
+
+/**
+ * Implements hook_libraries_info().
+ *
+ */
+function cesium_libraries_info() {
+    $libraries = [];
+
+    $libraries[CESIUM_LIBRARY_NAME] = [
+        'name' => CESIUM_LIBRARY_NAME,
+        'vendor url' => 'http://cesiumjs.org',
+        'download url' => 'http://cesiumjs.org/downloads.html',
+        'version arguments' => [
+            'file' => 'package.json',
+            'pattern' => '/((?:\d+\.?){2,3})/',
+            'lines' => 3
+        ],
+        'files' => [
+            'js' => ['Cesium/Cesium.js'],
+            'css'=> ['Cesium/Widgets/widgets.css']
+        ],
+    ];
+
+    $libraries[CESIUM_LIBRARY_NAME]['variants'] = [
+        'minified' => [
+            'files' => [
+                'js' => ['Cesium/Cesium.js'],
+                'css' => ['Cesium/Widgets/widgets.css']
+            ]
+        ],
+        'unminified' => [
+            'files' => [
+                'js' => ['CesiumUnminified/Cesium.js'],
+                'css' => ['CesiumUnminified/Widgets/widgets.css']
+            ]
+        ]
+    ];
+
+    return $libraries;
+}
